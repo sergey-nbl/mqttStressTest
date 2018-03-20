@@ -30,6 +30,8 @@ class Device2CloudTest extends TestBase {
 	}
 
 	function _sendsync() {
+		local retry = 10;
+
 		local rand = ::irand(MAX_MESSAGE_SIZE);
 
 		while (true) {
@@ -45,7 +47,10 @@ class Device2CloudTest extends TestBase {
 
 				print("Sending next immediately");
 			} catch (e) {
-				if (e.find("cannot create blob") != null) {
+				if (e.find("cannot create blob") != null && retry > 0) {
+
+					retry--;
+
 					rand = rand / 2;
 					continue;
 				}
@@ -59,7 +64,7 @@ class Device2CloudTest extends TestBase {
 	function _ondelivery(messages) {
 		foreach(id in messages) print("Delivered message " + id);
 
-		imp.wakeup(10, _sendsync.bindenv(this));
+		if (client != null) imp.wakeup(10, _sendsync.bindenv(this));
 	}
 
 
