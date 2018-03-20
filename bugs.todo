@@ -1,0 +1,3 @@
+* No onconnected() for connect() call on already connected client
+* Can't reboot agent in case of infinite message loop
+* Possible to send message on disconnected client
