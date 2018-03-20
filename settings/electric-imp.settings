@@ -1,0 +1,9 @@
+{
+    "builder-settings": {
+        "builder_cli_path": "C:\\Users\\CheshireCat\\Application Data\\npm\\node_modules\\Builder\\src\\cli.js", 
+        "variable-definitions": {}, 
+        "node_path": "C:\\Program Files\\nodejs\\node.exe"
+    }, 
+    "device-file": "src\\device.nut", 
+    "agent-file": "src\\agent.nut"
+}
