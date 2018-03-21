@@ -20,7 +20,7 @@ class Device2CloudTest extends TestBase {
 	function _create() {
 		print("Creating client");
 
-		client = mqtt.createclient(URL, DEVICE_ID, _onmessage, _ondelivery.bindenv(this), _disconnected);
+		client = mqtt.createclient(URL, DEVICE_ID, _onmessage, _ondelivery.bindenv(this), _disconnected.bindenv(this));
 	}
 
 
@@ -62,14 +62,17 @@ class Device2CloudTest extends TestBase {
 	}
 
 	function _ondelivery(messages) {
+		// test was closed
+		if (client == null) return;
+
 		foreach(id in messages) print("Delivered message " + id);
 
-		if (client != null) imp.wakeup(10, _sendsync.bindenv(this));
+		imp.wakeup(MESSAGE_PERIOD, _sendsync.bindenv(this));
 	}
 
 
 	function _onconnected(rc, info) {
-		print("OnConnected " + rc + ":" + info);
+		print("OnConnected " + this + " rc=" + rc + " info=" + info);
 
 		if (rc == 0) {
 			_sendsync();
@@ -78,13 +81,6 @@ class Device2CloudTest extends TestBase {
 		}
 	}
 
-	function _disconnect() {
-		print("Disconnecting");
-		client.disconnect(_disconnected.bindenv(this));
-
-		// try to avoid IP address ban
-		imp.wakeup(10, _run.bindenv(this));
-	}
 
 	function _typeof() {
 		return "Device2CloudTest";

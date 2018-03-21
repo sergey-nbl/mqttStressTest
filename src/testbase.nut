@@ -1,15 +1,15 @@
 class TestBase {
 
 	function _onmessage(message) {
-		print("_onmessage");
+		print("_onmessage: " + this);
 	}
 
 	function _ondelivery(message) {
-		print("_ondelivery");
+		print("_ondelivery: " + this);
 	}
 
 	function _disconnected() {
-		print("_disconnected");
+		print("_disconnected: " + this);
 	}
 
 
