@@ -30,6 +30,7 @@
 @include "test1.nut"
 @include "test2.nut"
 @include "test3.nut"
+@include "test4.nut"
 
 pp <- PrettyPrinter(null, false);
 print <- pp.print.bindenv(pp);
@@ -42,7 +43,11 @@ const rebootChance = 30;
 const stopChance   = 70;
 const chaosTimer   = 100;
 
-MAX_MESSAGE_SIZE <- 1048576; //1Mb
+MAX_MESSAGE_SIZE <- 524288; //512Kb
+
+MESSAGE_PERIOD <- 10; //sec
+
+MAX_TOPIC_URL_DEPTH <- 10;
 
 nextTest <- null;
 
@@ -59,7 +64,9 @@ function init() {
 	URL 		<- "ssl://" + cn.HostName;
 	DEVICE_ID 	<- cn.DeviceId;
 
-	DEVICE2CLOUD_URL <- "devices/" + cn.DeviceId + "/messages/events/"
+	DEVICE2CLOUD_URL <- "devices/" + cn.DeviceId + "/messages/events/";
+
+	CLOUD2DEVICE_URL <- "devices/" + cn.DeviceId + "/messages/devicebound";
 
 	OPTIONS <- {"username" : USERNAME, "password" : PASSWORD};
 
@@ -97,7 +104,7 @@ function irand(max) {
     return roll.tointeger();
 }
 
-tests <- [/*CreateClientTest, ConnectDisconnectTest, */Device2CloudTest];
+tests <- [CreateClientTest, ConnectDisconnectTest, Device2CloudTest, SubscribeTest];
 
 init();
 

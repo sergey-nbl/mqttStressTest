@@ -1,35 +1,16 @@
 
 class Device2CloudTest extends TestBase {
 
-	client = null;
-
 	constructor() {
 		_create();
 
 		imp.wakeup(1, _connect.bindenv(this));
 	}
 
-	function shutdown(onComplete) {
-		client.disconnect();
-		client = null;
-
-		onComplete();
-	}
-
-
-	function _create() {
-		print("Creating client");
-
-		client = mqtt.createclient(URL, DEVICE_ID, _onmessage, _ondelivery.bindenv(this), _disconnected.bindenv(this));
-	}
-
-
-	function _connect() {
-		print("Connecting");
-		client.connect(_onconnected.bindenv(this), OPTIONS);
-	}
-
 	function _sendsync() {
+
+		if (client == null) return;
+
 		local retry = 10;
 
 		local rand = ::irand(MAX_MESSAGE_SIZE);
@@ -38,7 +19,13 @@ class Device2CloudTest extends TestBase {
 			try {
 				local body = blob(rand).tostring();
 				local message = client.createmessage(DEVICE2CLOUD_URL, body);
-				local id = message.sendsync();
+
+				rand = ::irand(100);
+				if (rand < 50) {
+					local id = message.sendsync();
+				} else {
+					local id = message.sendasync(_onPushed.bindenv(this));
+				}
 				print("Message was sent");
 
 				// send next at once?
@@ -55,19 +42,26 @@ class Device2CloudTest extends TestBase {
 					continue;
 				}
 
-				print("Critical error " + e);
+				print("Critical error at " + this + ". Exception " + e);
 				break;
 			}
 		}
+	}
+
+	function _onPushed(messId, rc) {
+		print("_onPushed: " + messId + " rc=" + rc);
 	}
 
 	function _ondelivery(messages) {
 		// test was closed
 		if (client == null) return;
 
-		foreach(id in messages) print("Delivered message " + id);
+		print("Delivered message(s) at " + this + "[");
+		foreach(id in messages)  print(id);
+		print("]");
 
-		imp.wakeup(MESSAGE_PERIOD, _sendsync.bindenv(this));
+		local rand = ::irand(MESSAGE_PERIOD);
+		imp.wakeup(rand, _sendsync.bindenv(this));
 	}
 
 

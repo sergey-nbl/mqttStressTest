@@ -1,28 +1,11 @@
 
 class ConnectDisconnectTest extends TestBase {
 
-	client = null;
-
 	constructor() {
 		_create();
 
 		imp.wakeup(1, _run.bindenv(this));
 	}
-
-	function shutdown(onComplete) {
-		client.disconnect();
-		client = null;
-
-		onComplete();
-	}
-
-
-	function _create() {
-		print("Creating client");
-
-		client = mqtt.createclient(URL, DEVICE_ID, _onmessage, _ondelivery, _disconnected);
-	}
-
 
 	function _run() {
 		print("Connecting....");
@@ -48,7 +31,7 @@ class ConnectDisconnectTest extends TestBase {
 		client.disconnect(_disconnected.bindenv(this));
 
 		// try to avoid IP address ban
-		imp.wakeup(10, _run.bindenv(this));
+		imp.wakeup(::irand(10), _run.bindenv(this));
 	}
 
 	function _typeof() {
