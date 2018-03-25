@@ -1,8 +1,8 @@
 
 class ConnectDisconnectTest extends TestBase {
 
-	constructor() {
-		_create();
+	constructor(authToken) {
+		_create(authToken);
 
 		imp.wakeup(1, _run.bindenv(this));
 	}

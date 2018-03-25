@@ -1,114 +1,72 @@
+@include "github:sergey-nbl/AzureTwins/AzureTwins.agent.lib.nut"
 
-class SubscribeTest extends TestBase {
 
-    urls = null;
+class SubscribeTest  extends AzureTwin {
 
-	constructor() {
-        urls =[];
+	constructor(authToken) {
+		base.constructor(authToken, connectionHandler.bindenv(this), twinUpdateHandler.bindenv(this));
 
-		_create();
-
-		imp.wakeup(1, _connect.bindenv(this));
-
-		imp.wakeup(1, _unsubscribe.bindenv(this));
+		_debug = false;
 	}
 
-	function _subscribe() {
-		// test closed
-		if (client == null) return;
+	function run() {
+		local nextMethod = ::irand(100);
 
-		while (true) {
-			try {
-				// number of topics
-				local not =	 ::irand(9) + 1;
-				local topics = [];
-				while(not--) {
-					local url = _getUrl();
-					print("Subscribing " + url)
-					topics.append(url);
-				}
-
-				local id = client.subscribe(topics, "AT_MOST_ONCE", _onsubscribed.bindenv(this));
-
-				if (id < 0) {
-					print("Can't subscribe next group. Err=" + id )
-
-					imp.wakeup(20, _subscribe.bindenv(this));
-				}
-
-				print("Subscribe request " + id + " was sent");
-
-				local next = ::irand(100);
-				if (next > 50) break;
-
-				print("Subscribe next at once");
-			} catch (e) {
-				print("Critical error at " + this + " Exception:" + e);
-				break;
-			}
-		}
-	}
-
-	function _unsubscribe() {
-		// test closed
-		if (client == null) return;
-
-		if (urls.len() > 0) {
-
-			local not = ::irand(urls.len() - 1) + 1;
-
-			local topics = [];
-
-			while(not--) {
-				local url = urls.remove(0);
-				print("Unsubscribing " + url);
-				topics.append(url);
-			}
-
-			client.unsubscribe(topics);
-
-			print("Unsubscribe request was sent");
-		}
-
-		imp.wakeup(1, _unsubscribe.bindenv(this));
-	}
-
-	function _onsubscribed(result) {
-		print("_onsubscribed");
-		print(result);
-
-		_subscribe();
-	}
-
-	function _onconnected(rc, info) {
-		print("OnConnected " + rc + ":" + info);
-
-		if (rc == 0) {
-			_subscribe();
+		if (nextMethod < 33) {
+			getCurrentStatus(onCurrentStatus.bindenv(this));
+		} else if (nextMethod > 66) {
+			local status = { "field1" : ::irand(100) };
+			updateStatus(http.jsonencode(status), onUpdateStatus.bindenv(this));
 		} else {
-			print("Critical error. Test aborted");
+			restart();
 		}
 	}
 
-    function _getUrl() {
-        local url = CLOUD2DEVICE_URL;
-        local level = 0;
+	function restart() {
+		print("Resubsribing");
+		local topics = ["$iothub/twin/res/#","$iothub/methods/POST/#", "$iothub/twin/PATCH/properties/desired/#"];
+		try {
+			_mqttclient.unsubscribe(topics);
+			_state  = CONNECTED;
+			_subscribe();
+		} catch (e) {
+			print("Can't unsubscribe: " + e);
+			print("Continue as SUBSCRIBED");
+			run();
+		}
+	}
 
-        while (true) {
-            local rand = ::irand(100);
-            if (rand > 50 && level < MAX_TOPIC_URL_DEPTH) {
-                url = url + "/bubuka";
-            } else {
-                url = url + "/#";
-                break;
-			}
+	function onCurrentStatus(err, body) {
+		print("onCurrentStatus: err=" + err);
+		run();
+	}
 
-			level++;
-        }
-		urls.append(url);
+	function onUpdateStatus(err, body) {
+		print("onUpdateStatus: err=" + err );
+		run();
+	}
 
-		return url;
-    }
+	function shutdown(onComplete) {
+        local gracefully = :: irand(100);
+
+        if (gracefully) _mqttclient.disconnect();
+
+		print ("Test " + this + " closed");
+
+		onComplete();
+	}
+
+	function connectionHandler(state) {
+		print("Twin connection status " + state);
+
+		if (state == SUBSCRIBED) {
+			run();
+		}
+	}
+
+	function twinUpdateHandler(version, body) {
+		print("Twin update: " + version + " : " + body);
+	}
 
 	function _typeof() {
 		return "SubscribeTest";

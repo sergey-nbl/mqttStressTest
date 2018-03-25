@@ -5,7 +5,9 @@ class CreateClientTest  extends TestBase {
 
 	timer 	= null;
 
-	constructor() {
+	token = null;
+
+	constructor(authToken) {
 		clients = [];
 
 		timer = imp.wakeup(1, _run.bindenv(this));
@@ -46,7 +48,7 @@ class CreateClientTest  extends TestBase {
 
 	function _create() {
 		print("Creating client");
-		local client = mqtt.createclient(URL, DEVICE_ID, _onmessage, _ondelivery, _disconnected);
+		base._create(token);
 
 		clients.append(client);
 	}

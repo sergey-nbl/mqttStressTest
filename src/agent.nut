@@ -38,7 +38,6 @@ print <- pp.print.bindenv(pp);
 
 const authToken = "@{IOT_HUB_CONNECTION}";
 
-
 const rebootChance = 30;
 const stopChance   = 70;
 const chaosTimer   = 100;
@@ -47,31 +46,11 @@ MAX_MESSAGE_SIZE <- 524288; //512Kb
 
 MESSAGE_PERIOD <- 10; //sec
 
-MAX_TOPIC_URL_DEPTH <- 10;
-
 nextTest <- null;
 
 print("Test (re)started. Using connection string: " + authToken);
 
 function init() {
-	local cn = AzureIoTHub.ConnectionString.Parse(authToken);
-	local devPath = "/" + cn.DeviceId;
-	local resourcePath = "/devices" + devPath;
-	local resourceUri = AzureIoTHub.Authorization.encodeUri(cn.HostName + resourcePath);
-
-	PASSWORD <- AzureIoTHub.SharedAccessSignature.create(resourceUri, null, cn.SharedAccessKey, AzureIoTHub.Authorization.anHourFromNow()).toString();
-	USERNAME <- cn.HostName + devPath + "/" + AZURE_HTTP_API_VERSION;
-	URL 		<- "ssl://" + cn.HostName;
-	DEVICE_ID 	<- cn.DeviceId;
-
-	DEVICE2CLOUD_URL <- "devices/" + cn.DeviceId + "/messages/events/";
-
-	CLOUD2DEVICE_URL <- "devices/" + cn.DeviceId + "/messages/devicebound";
-
-	OPTIONS <- {"username" : USERNAME, "password" : PASSWORD};
-
-	print("Options");print(OPTIONS);
-
 	runNext();
 }
 
@@ -92,7 +71,7 @@ function chaos() {
 function runNext() {
 	local rand = irand(tests.len() - 1);
 
-	nextTest = tests[rand]();
+	nextTest = tests[rand](authToken);
 
 	print("Running " + (typeof nextTest));
 

@@ -1,13 +1,13 @@
 
 class Device2CloudTest extends TestBase {
 
-	constructor() {
-		_create();
+	constructor(authToken) {
+		_create(authToken);
 
 		imp.wakeup(1, _connect.bindenv(this));
 	}
 
-	function _sendsync() {
+	function _send() {
 
 		if (client == null) return;
 
@@ -18,13 +18,13 @@ class Device2CloudTest extends TestBase {
 		while (true) {
 			try {
 				local body = blob(rand).tostring();
-				local message = client.createmessage(DEVICE2CLOUD_URL, body);
+				local message = client.createmessage(device2cloud_url, body);
 
 				rand = ::irand(100);
 				if (rand < 50) {
 					local id = message.sendsync();
 				} else {
-					local id = message.sendasync(_onPushed.bindenv(this));
+					local id = message.sendasync(_onSend.bindenv(this));
 				}
 				print("Message was sent");
 
@@ -48,8 +48,8 @@ class Device2CloudTest extends TestBase {
 		}
 	}
 
-	function _onPushed(messId, rc) {
-		print("_onPushed: " + messId + " rc=" + rc);
+	function _onSend(messId, rc) {
+		print("_onSend: " + messId + " rc=" + rc);
 	}
 
 	function _ondelivery(messages) {
@@ -61,7 +61,7 @@ class Device2CloudTest extends TestBase {
 		print("]");
 
 		local rand = ::irand(MESSAGE_PERIOD);
-		imp.wakeup(rand, _sendsync.bindenv(this));
+		imp.wakeup(rand, _send.bindenv(this));
 	}
 
 
@@ -69,7 +69,7 @@ class Device2CloudTest extends TestBase {
 		print("OnConnected " + this + " rc=" + rc + " info=" + info);
 
 		if (rc == 0) {
-			_sendsync();
+			_send();
 		} else {
 			print("Critical error. Test aborted");
 		}
