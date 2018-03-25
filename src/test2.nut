@@ -9,7 +9,7 @@ class ConnectDisconnectTest extends TestBase {
 
 	function _run() {
 		print("Connecting....");
-		client.connect(_onconnected.bindenv(this), OPTIONS);
+		client.connect(_onconnected.bindenv(this), options);
 	}
 
 	function _disconnected() {

@@ -83,7 +83,7 @@ function irand(max) {
     return roll.tointeger();
 }
 
-tests <- [CreateClientTest, ConnectDisconnectTest, Device2CloudTest, SubscribeTest];
+tests <- [CreateClientTest,  ConnectDisconnectTest, Device2CloudTest, SubscribeTest ];
 
 init();
 

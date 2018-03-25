@@ -9,7 +9,7 @@ class CreateClientTest  extends TestBase {
 
 	constructor(authToken) {
 		clients = [];
-
+		token 	= authToken;
 		timer = imp.wakeup(1, _run.bindenv(this));
 	}
 
